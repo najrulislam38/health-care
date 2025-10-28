@@ -16,7 +16,7 @@ export default function PublicNavbar() {
     { name: "Contact", href: "/contact" },
   ];
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur py-4 ">
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur py-4">
       <Container>
         <div className="flex items-center justify-between gap-4">
           {/*  */}
