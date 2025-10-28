@@ -2,6 +2,10 @@
 import { Hero } from "@/components/modules/Home/Hero/HeroSection";
 import svgPaths from "./../../assets/svg/svg";
 import heroImage from "./../../assets/images/heroImage.jpg";
+import Specialties from "@/components/modules/Home/Specialities";
+import Features from "@/components/modules/Home/Features";
+import TopDoctors from "@/components/modules/Home/TopDoctors";
+import PatientReviews from "@/components/modules/Home/PatientReviews";
 
 export default function Home() {
   return (
@@ -144,9 +148,10 @@ export default function Home() {
         ]}
       />
       <main>
-        <div>
-          <h1>Welcome to the Health Care App</h1>
-        </div>
+        <Features />
+        <Specialties />
+        <TopDoctors />
+        <PatientReviews />
       </main>
     </>
   );
