@@ -1,0 +1,32 @@
+const checkAuth = async () => {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
+      method: "GET",
+      headers: {
+        "content-type": "application/json",
+      },
+      credentials: "include",
+    });
+
+    const data = await res.json();
+
+    console.log(data);
+
+    // if (!res.ok) {
+    //   throw new Error("Failed to fetch authentication status.");
+    // }
+
+    // return {
+    //   isAuthenticated: true,
+    //   user: data.data,
+    // };
+  } catch (err: any) {
+    console.log(err.message);
+    // return {
+    //   isAuthenticated: true,
+    //   user: null,
+    // };
+  }
+};
+
+export default checkAuth;
