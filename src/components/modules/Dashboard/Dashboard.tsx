@@ -7,7 +7,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 import data from "./../../../../public/data.json";
 
-export default function DashboardComponent() {
+export default async function DashboardComponent() {
   return (
     <SidebarProvider
       style={

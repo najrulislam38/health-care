@@ -15,9 +15,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import loginUser from "@/utils/login";
 import checkAuth from "@/utils/auth";
 import { useRouter } from "next/navigation";
+import { AuthSystem } from "@/utils/login";
 
 // ✅ Zod schema for validation
 const loginSchema = z.object({
@@ -49,7 +49,7 @@ export function LoginForm() {
 
     try {
       // Simulate login API call
-      const result = await loginUser(data.email, data.password);
+      const result = await AuthSystem.loginUser(data.email, data.password);
       console.log("response form loginForm", result);
       if (result.success) {
         const authorized = await checkAuth();

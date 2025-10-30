@@ -1,10 +1,22 @@
+"use client";
+
 import { Stethoscope } from "lucide-react";
 import Container from "./Container";
 import Link from "next/link";
 import { Button } from "../ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import checkAuth from "@/utils/auth";
+import LogoutButton from "./LogoutButton";
+
+const { user } = await checkAuth();
 
 export default function PublicNavbar() {
+  const { role } = user || { role: "GUEST" };
+
+  console.log({ user });
+
+  console.log({ role });
+
   const navLinks = [
     { name: "Home", href: "/" },
     // { name: "Features", href: "/features" },
@@ -15,6 +27,7 @@ export default function PublicNavbar() {
     { name: "NGOs", href: "/ngos" },
     { name: "Contact", href: "/contact" },
   ];
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur py-4">
       <Container>
@@ -40,9 +53,13 @@ export default function PublicNavbar() {
               </ul>
             </nav>
             <div>
-              <Link href={"/login"}>
-                <Button>Login</Button>
-              </Link>
+              {role !== "GUEST" ? (
+                <LogoutButton />
+              ) : (
+                <Link href="/login">
+                  <Button>Login</Button>
+                </Link>
+              )}
             </div>
           </div>
           {/* mobile sidebar */}

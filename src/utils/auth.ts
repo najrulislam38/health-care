@@ -3,13 +3,11 @@ const checkAuth = async () => {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
       method: "GET",
       headers: {
-        "content-type": "application/json",
+        "Content-Type": "application/json",
       },
       credentials: "include",
     });
-
     const data = await res.json();
-
     console.log(data);
 
     if (!res.ok) {
@@ -23,7 +21,7 @@ const checkAuth = async () => {
   } catch (err: any) {
     console.log(err.message);
     return {
-      isAuthenticated: true,
+      isAuthenticated: false,
       user: null,
     };
   }
