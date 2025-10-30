@@ -12,20 +12,20 @@ const checkAuth = async () => {
 
     console.log(data);
 
-    // if (!res.ok) {
-    //   throw new Error("Failed to fetch authentication status.");
-    // }
+    if (!res.ok) {
+      throw new Error("Failed to fetch authentication status.");
+    }
 
-    // return {
-    //   isAuthenticated: true,
-    //   user: data.data,
-    // };
+    return {
+      isAuthenticated: true,
+      user: data.data,
+    };
   } catch (err: any) {
     console.log(err.message);
-    // return {
-    //   isAuthenticated: true,
-    //   user: null,
-    // };
+    return {
+      isAuthenticated: true,
+      user: null,
+    };
   }
 };
 

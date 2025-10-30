@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Eye, EyeOff, Mail, Lock } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, Loader } from "lucide-react";
 import { useForm } from "react-hook-form";
 import {
   Form,
@@ -52,9 +52,27 @@ export function LoginForm() {
       const result = await loginUser(data.email, data.password);
       console.log("response form loginForm", result);
       if (result.success) {
-        const isAuthenticated = await checkAuth();
+        const authorized = await checkAuth();
 
-        console.log(isAuthenticated);
+        const { role } = authorized.user;
+        if (authorized.isAuthenticated && authorized.user) {
+          switch (role) {
+            case "ADMIN":
+              router.push("/dashboard");
+              break;
+            case "DOCTOR":
+              router.push("/dashboard");
+              break;
+            case "PATIENT":
+              router.push("/dashboard");
+              break;
+            default:
+              router.push("/dashboard");
+              break;
+          }
+        } else {
+          setError("Authentication failed after login.");
+        }
       } else {
         setError("Failed to retrieve user information after login.");
       }
@@ -162,7 +180,14 @@ export function LoginForm() {
             </div>
 
             {/* Submit Button */}
-            <Button type="submit" className="w-full rounded-lg py-2.5">
+            <Button
+              type="submit"
+              className="w-full rounded-lg py-2.5"
+              disabled={isLoading}
+            >
+              {isLoading && (
+                <Loader className="size-5 mr-2 animate-spin inline-block" />
+              )}
               Get Started
             </Button>
           </form>
