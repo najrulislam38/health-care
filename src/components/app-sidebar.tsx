@@ -23,12 +23,7 @@ import {
 import checkAuth from "@/utils/auth";
 import { HomeIcon } from "lucide-react";
 import Link from "next/link";
-
-const { user } = await checkAuth();
-
-const { role } = user || { role: "GUEST" };
-
-const navMenuItems = [
+const baseNavMenuItems = [
   {
     title: "Dashboard",
     url: "#",
@@ -56,49 +51,78 @@ const navMenuItems = [
   // },
 ];
 
-if (role === "ADMIN") {
-  navMenuItems.push(
-    {
-      title: "Manage Doctors",
-      url: "/dashboard/manage-doctors",
-      icon: IconSettings,
-    },
-    {
-      title: "Manage Patient",
-      url: "/dashboard/manage-patients",
-      icon: IconUsers,
-    }
-  );
-}
-
-const data = {
-  user: {
-    name: user?.name,
-    email: user?.email,
-    avatar: user?.imageUrl,
+const navSecondary = [
+  {
+    title: "Settings",
+    url: "#",
+    icon: IconSettings,
   },
-  navMain: navMenuItems,
-
-  navSecondary: [
-    {
-      title: "Settings",
-      url: "#",
-      icon: IconSettings,
-    },
-    {
-      title: "Get Help",
-      url: "#",
-      icon: IconHelp,
-    },
-    {
-      title: "Search",
-      url: "#",
-      icon: IconSearch,
-    },
-  ],
-};
+  {
+    title: "Get Help",
+    url: "#",
+    icon: IconHelp,
+  },
+  {
+    title: "Search",
+    url: "#",
+    icon: IconSearch,
+  },
+];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const [user, setUser] = React.useState<any | null>(null);
+
+  React.useEffect(() => {
+    let mounted = true;
+
+    const load = async () => {
+      try {
+        const res = await checkAuth();
+        if (!mounted) return;
+        if (res?.isAuthenticated) {
+          setUser(res.user);
+        } else {
+          setUser(null);
+        }
+      } catch (err) {
+        if (mounted) setUser(null);
+      }
+    };
+
+    load();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const role = user?.role ?? "GUEST";
+
+  const navMain = React.useMemo(() => {
+    const items = [...baseNavMenuItems];
+    if (role === "ADMIN") {
+      items.push(
+        {
+          title: "Manage Doctors",
+          url: "/dashboard/manage-doctors",
+          icon: IconSettings,
+        },
+        {
+          title: "Manage Patients",
+          url: "/dashboard/manage-patients",
+          icon: IconUsers,
+        }
+      );
+    }
+    return items;
+  }, [role]);
+
+  const userData = {
+    name: user?.name ?? "Guest",
+    email: user?.email ?? "",
+    avatar: user?.imageUrl ?? "",
+  };
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -117,11 +141,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <NavMain items={navMain} />
+        <NavSecondary items={navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={userData} />
       </SidebarFooter>
     </Sidebar>
   );

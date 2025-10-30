@@ -7,22 +7,37 @@ import { Button } from "../ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import checkAuth from "@/utils/auth";
 import LogoutButton from "./LogoutButton";
-
-const { user } = await checkAuth();
+import { useEffect, useState } from "react";
 
 export default function PublicNavbar() {
-  const { role } = user || { role: "GUEST" };
+  const [isLoading, setIsLoading] = useState(true);
+  type User = { role?: string } | null;
+  const [user, setUser] = useState<User>(null);
 
-  console.log({ user });
+  useEffect(() => {
+    const fetchAuth = async () => {
+      try {
+        const { user: authUser } = await checkAuth();
+        setUser(authUser);
+      } catch (error) {
+        console.error("Failed to fetch auth:", error);
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchAuth();
+  }, []);
+  console.log(user);
 
-  console.log({ role });
+  const role = user?.role || "GUEST";
 
   const navLinks = [
     { name: "Home", href: "/" },
     // { name: "Features", href: "/features" },
     { name: "Consultation", href: "/consultation" },
     { name: "Doctors", href: "/doctors" },
-    { name: "Heath Plans", href: "/health-plans" },
+    { name: "Health Plans", href: "/health-plans" },
     { name: "Diagnostics", href: "/diagnostics" },
     { name: "NGOs", href: "/ngos" },
     { name: "Contact", href: "/contact" },
