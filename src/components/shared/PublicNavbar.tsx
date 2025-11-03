@@ -5,43 +5,27 @@ import Container from "./Container";
 import Link from "next/link";
 import { Button } from "../ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import checkAuth from "@/utils/auth";
 import LogoutButton from "./LogoutButton";
-import { useEffect, useState } from "react";
+import { UseUser } from "@/providers/UserProvider";
 
 export default function PublicNavbar() {
-  const [isLoading, setIsLoading] = useState(true);
-  type User = { role?: string } | null;
-  const [user, setUser] = useState<User>(null);
-
-  useEffect(() => {
-    const fetchAuth = async () => {
-      try {
-        const { user: authUser } = await checkAuth();
-        setUser(authUser);
-      } catch (error) {
-        console.error("Failed to fetch auth:", error);
-        setUser(null);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchAuth();
-  }, []);
-  console.log(user);
-
+  const { user } = UseUser();
   const role = user?.role || "GUEST";
 
   const navLinks = [
-    { name: "Home", href: "/" },
-    // { name: "Features", href: "/features" },
-    { name: "Consultation", href: "/consultation" },
-    { name: "Doctors", href: "/doctors" },
-    { name: "Health Plans", href: "/health-plans" },
-    { name: "Diagnostics", href: "/diagnostics" },
-    { name: "NGOs", href: "/ngos" },
-    { name: "Contact", href: "/contact" },
+    { label: "Home", href: "/" },
+    // { label: "Features", href: "/features" },
+    { label: "Consultation", href: "/consultation" },
+    { label: "Doctors", href: "/doctors" },
+    { label: "Health Plans", href: "/health-plans" },
+    { label: "Diagnostics", href: "/diagnostics" },
+    { label: "NGOs", href: "/ngos" },
+    { label: "Contact", href: "/contact" },
   ];
+
+  if (role === "ADMIN") {
+    navLinks.push({ href: "/admin/dashboard", label: "Admin Dashboard" });
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur py-4">
@@ -61,7 +45,7 @@ export default function PublicNavbar() {
                       href={link.href}
                       className="hover:text-primary transition-all duration-300"
                     >
-                      {link.name}
+                      {link.label}
                     </Link>
                   </li>
                 ))}
@@ -122,7 +106,7 @@ export default function PublicNavbar() {
                         className="py-1.5"
                         // active={link.active}
                       >
-                        {link.name}
+                        {link.label}
                       </Link>
                     </li>
                   ))}

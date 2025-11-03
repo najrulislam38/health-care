@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { UserProvider } from "@/providers/UserProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,7 +31,7 @@ export default function RootLayout({
         data-new-gr-c-s-check-loaded="14.1259.0"
         data-gr-ext-installed=""
       >
-        {children}
+        <UserProvider>{children}</UserProvider>
       </body>
     </html>
   );

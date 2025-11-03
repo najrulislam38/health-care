@@ -18,6 +18,7 @@ import Link from "next/link";
 import checkAuth from "@/utils/auth";
 import { useRouter } from "next/navigation";
 import { AuthSystem } from "@/utils/login";
+import { UseUser } from "@/providers/UserProvider";
 
 // ✅ Zod schema for validation
 const loginSchema = z.object({
@@ -34,6 +35,7 @@ export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const { setUser } = UseUser();
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -54,17 +56,19 @@ export function LoginForm() {
       if (result.success) {
         const authorized = await checkAuth();
 
+        setUser(authorized.user);
+
         const { role } = authorized.user;
         if (authorized.isAuthenticated && authorized.user) {
           switch (role) {
             case "ADMIN":
-              router.push("/dashboard");
+              router.push("/admin/dashboard");
               break;
             case "DOCTOR":
-              router.push("/dashboard");
+              router.push("/doctor/dashboard");
               break;
             case "PATIENT":
-              router.push("/dashboard");
+              router.push("/patient/dashboard");
               break;
             default:
               router.push("/dashboard");

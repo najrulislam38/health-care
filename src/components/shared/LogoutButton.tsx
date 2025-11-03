@@ -8,7 +8,7 @@ export default function LogoutButton() {
     try {
       const res = await AuthSystem.logoutUser();
       console.log("Logout success:", res);
-      window.location.href = "/login"; // redirect after logout
+      window.location.href = "/"; // redirect after logout
     } catch (err: any) {
       console.error("Logout failed:", err.message);
     }

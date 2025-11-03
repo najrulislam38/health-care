@@ -1,14 +1,7 @@
 import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
 import { jwtDecode } from "jwt-decode";
-
-interface IUser {
-  id: string;
-  email: string;
-  role: "ADMIN" | "DOCTOR" | "PATIENT";
-  exp: number;
-  iat: number;
-}
+import { IUser } from "./types/user.types";
 
 const roleBaseRoutes = {
   ADMIN: ["/admin/dashboard"],
@@ -113,7 +106,7 @@ export async function proxy(request: NextRequest) {
 // See "Matching Paths" below to learn more
 export const config = {
   matcher: [
-    "/dashboard/:path*",
+    "/admin/dashboard/:path*",
     "/login",
     "/register",
     "/forgot-password",
