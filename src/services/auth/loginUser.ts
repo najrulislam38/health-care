@@ -1,6 +1,8 @@
 "use server";
 
-import z from "zod";
+import z, { set } from "zod";
+import { parse } from "cookie";
+import { cookies } from "next/headers";
 
 const loginUserValidationZodSchema = z.object({
   email: z.email({ error: "Email is required" }),
@@ -19,6 +21,8 @@ export const loginUser = async (
   formData: any
 ): Promise<any> => {
   try {
+    let accessTokenObject: null | any = null;
+    let refreshTokenObject: null | any = null;
     const loginData = {
       email: formData.get("email"),
       password: formData.get("password"),
@@ -47,7 +51,48 @@ export const loginUser = async (
       body: JSON.stringify(loginData),
       credentials: "include",
     });
-    return res.json();
+
+    const setCookieHeader = res.headers.getSetCookie();
+
+    if (setCookieHeader && setCookieHeader.length > 0) {
+      setCookieHeader.forEach((cookie: string) => {
+        const parsedCookie = parse(cookie);
+
+        if (parsedCookie["accessToken"]) {
+          accessTokenObject = parsedCookie;
+        }
+        if (parsedCookie["refreshToken"]) {
+          refreshTokenObject = parsedCookie;
+        }
+      });
+    }
+
+    if (!accessTokenObject) {
+      throw new Error("accessToken not found!");
+    }
+
+    if (!refreshTokenObject) {
+      throw new Error("refreshToken not found!");
+    }
+
+    const cookieStore = await cookies();
+
+    cookieStore.set("accessToken", accessTokenObject.accessToken, {
+      httpOnly: true,
+      sameSite: true,
+      maxAge: parseInt(accessTokenObject.maxAge),
+      path: accessTokenObject.path || "/",
+    });
+
+    cookieStore.set("refreshToken", refreshTokenObject["refreshToken"], {
+      httpOnly: true,
+      sameSite: true,
+      maxAge: parseInt(refreshTokenObject.maxAge),
+      path: refreshTokenObject.path || "/",
+    });
+
+    const result = await res.json();
+    return result;
   } catch (error: any) {
     console.log(error);
     throw new Error(error.message || "Login failed");
