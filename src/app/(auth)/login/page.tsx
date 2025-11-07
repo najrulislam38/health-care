@@ -1,30 +1,9 @@
-import { LoginForm } from "@/components/modules/Login/LoginForm";
+import LoginForm from "@/components/modules/Login/LoginForm";
 import { Home } from "lucide-react";
 import Link from "next/link";
 
-export default function Login() {
-  //     <div className="min-h-screen w-full relative">
-  //   {/* Radial Gradient Background */}
-  //   <div
-  //     className="absolute inset-0 z-0"
-  //     style={{
-  //       background: "radial-gradient(125% 125% at 50% 10%, #fff 40%, #6366f1 100%)",
-  //     }}
-  //   />
-  //      {/* Your Content/Components */}
-  // </div>
+export default function LoginPage() {
   return (
-    // <div className="min-h-screen w-full bg-white relative">
-    //   {/* Teal Glow Background */}
-    //   <div
-    //     className="absolute inset-0 z-0"
-    //     style={{
-    //       backgroundImage: `
-    //     radial-gradient(125% 125% at 50% 90%, #ffffff 40%, #14b8a6 100%)
-    //   `,
-    //       backgroundSize: "100% 100%",
-    //     }}
-    //   />
     <div className="w-full min-h-screen overflow-hidden">
       {/* Logo */}
       <div className="absolute hidden md:block left-8 top-8 cursor-pointer z-10  ">
@@ -38,8 +17,20 @@ export default function Login() {
       </div>
 
       {/* Login Form Container - Responsive positioning */}
-      <div className="flex items-center justify-center min-h-screen p-4 md:p-8">
-        <LoginForm />
+
+      <div className="flex items-center justify-center bg-gradient-to-br min-h-screen md:p-8 from-gray-50 to-gray-100 rounded-2xl">
+        <div className="w-full max-w-96 bg-white/70 backdrop-blur-sm shadow-lg rounded-3xl p-8 space-y-6 border border-gray-200">
+          {/* Header */}
+          <div className="text-center">
+            <h2 className="text-3xl font-semibold text-gray-900">
+              Sign in with email
+            </h2>
+            <p className="text-gray-600 mt-2 text-sm">
+              Access your health records and appointments securely
+            </p>
+          </div>
+          <LoginForm />
+        </div>
       </div>
     </div>
   );
