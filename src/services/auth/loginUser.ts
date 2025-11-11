@@ -53,7 +53,6 @@ export const loginUser = async (
     });
 
     const setCookieHeader = res.headers.getSetCookie();
-
     if (setCookieHeader && setCookieHeader.length > 0) {
       setCookieHeader.forEach((cookie: string) => {
         const parsedCookie = parse(cookie);
@@ -79,16 +78,19 @@ export const loginUser = async (
 
     cookieStore.set("accessToken", accessTokenObject.accessToken, {
       httpOnly: true,
-      sameSite: true,
-      maxAge: parseInt(accessTokenObject.maxAge),
+      secure: true,
+      maxAge: parseInt(accessTokenObject["Max-Age"]) || 1000 * 60 * 60,
       path: accessTokenObject.path || "/",
+      sameSite: accessTokenObject.sameSite || "none",
     });
 
     cookieStore.set("refreshToken", refreshTokenObject["refreshToken"], {
       httpOnly: true,
-      sameSite: true,
-      maxAge: parseInt(refreshTokenObject.maxAge),
+      secure: true,
+      maxAge:
+        parseInt(refreshTokenObject["Max-Age"]) || 1000 * 60 * 60 * 24 * 90,
       path: refreshTokenObject.path || "/",
+      sameSite: refreshTokenObject.sameSite || "none",
     });
 
     const result = await res.json();
