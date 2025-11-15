@@ -50,93 +50,14 @@
 // new proxy setup
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import { cookies } from "next/headers";
-
-type UserRole = "ADMIN" | "DOCTOR" | "PATIENT";
-
-//exact = ["my-profile", "/settings"]
-// patterns = ["/^\/dashboard/", "/^\/appointments/"]
-type RouteConfig = {
-  exact: string[];
-  patterns: RegExp[];
-};
-
-const authProtectedRoutes = [
-  "/login",
-  "/register",
-  "/forgot-password",
-  "/verify",
-  "/reset-password",
-];
-
-const commonProtectedRoutes: RouteConfig = {
-  exact: ["my-profile", "/settings"],
-  patterns: [],
-};
-
-const doctorProtectedRoutes: RouteConfig = {
-  patterns: [/^\/doctor\/./], // Routes starting with "/doctor/"
-  exact: [],
-};
-
-const adminProtectedRoutes: RouteConfig = {
-  patterns: [/^\/admin\/./], // Routes starting with "/admin/"
-  exact: [],
-};
-
-const patientProtectedRoutes: RouteConfig = {
-  patterns: [/^\/patient\/./], // Routes starting with "/patient/"
-  exact: [],
-};
-
-const isAuthRoute = (pathname: string) => {
-  return authProtectedRoutes.some((route) => {
-    // return route.startsWith(pathname)
-    return route === pathname;
-  });
-};
-
-const isRouteMatches = (pathname: string, routes: RouteConfig): boolean => {
-  if (routes.exact.includes(pathname)) {
-    return true;
-  }
-
-  return routes.patterns.some((pattern: RegExp) => pattern.test(pathname));
-
-  //if pathname === /dashboard/my-appointments => matches /^\/dashboard/ => true
-};
-
-const getRouteOwner = (
-  pathname: string
-): "ADMIN" | "DOCTOR" | "PATIENT" | "COMMON" | null => {
-  if (isRouteMatches(pathname, adminProtectedRoutes)) {
-    return "ADMIN";
-  }
-  if (isRouteMatches(pathname, doctorProtectedRoutes)) {
-    return "DOCTOR";
-  }
-  if (isRouteMatches(pathname, patientProtectedRoutes)) {
-    return "PATIENT";
-  }
-  if (isRouteMatches(pathname, commonProtectedRoutes)) {
-    return "COMMON";
-  }
-  return null;
-};
-
-const getDefaultDashboardRoute = (role: UserRole) => {
-  switch (role) {
-    case "ADMIN":
-      return "/admin/dashboard";
-    case "DOCTOR":
-      return "/doctor/dashboard";
-    case "PATIENT":
-      return "/dashboard";
-    default:
-      return "/";
-  }
-};
+import {
+  getDefaultDashboardRoute,
+  getRouteOwner,
+  isAuthRoute,
+  UserRole,
+} from "./lib/auth.utils";
 
 export async function proxy(request: NextRequest) {
   const cookieStore = await cookies();
@@ -178,7 +99,9 @@ export async function proxy(request: NextRequest) {
   }
 
   if (!accessToken) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("redirect", pathname);
+    return NextResponse.redirect(loginUrl);
   }
 
   // Rule 3: User is trying to access common protected routes
