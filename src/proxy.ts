@@ -1,47 +1,138 @@
+// import { NextResponse } from "next/server";
+// import type { NextRequest } from "next/server";
+
+// // This function can be marked `async` if using `await` inside
+// export function proxy(request: NextRequest) {
+//   const token = request.cookies.get("accessToken")?.value;
+
+//   const { pathname } = request.nextUrl;
+
+//   const protectedPaths = [
+//     "/dashboard",
+//     "/profile",
+//     "/settings",
+//     "/appointments",
+//   ];
+
+//   const authRoutes = ["/login", "/register", "/forgot-password"];
+
+//   const isProtectedPath = protectedPaths.some((path) =>
+//     pathname.startsWith(path)
+//   );
+
+//   const isAuthRoute = authRoutes.some((path) => pathname === path);
+
+//   if (isProtectedPath && !token) {
+//     return NextResponse.redirect(new URL("/login", request.url));
+//   }
+
+//   if (isAuthRoute && token) {
+//     return NextResponse.redirect(new URL("/", request.url));
+//   }
+
+//   return NextResponse.next();
+// }
+
+// // See "Matching Paths" below to learn more
+// export const config = {
+//   matcher: [
+//     "/dashboard/:path*",
+//     "/login",
+//     "/register",
+//     "/forgot-password",
+//     "/profile",
+//     "/settings",
+//     "/appointments",
+//   ],
+// };
+// old proxy setup
+
+// new proxy setup
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import jwt, { JwtPayload } from "jsonwebtoken";
+import { cookies } from "next/headers";
+import {
+  getDefaultDashboardRoute,
+  getRouteOwner,
+  isAuthRoute,
+  UserRole,
+} from "./lib/auth.utils";
 
-// This function can be marked `async` if using `await` inside
-export function proxy(request: NextRequest) {
-  const token = request.cookies.get("accessToken")?.value;
+export async function proxy(request: NextRequest) {
+  const cookieStore = await cookies();
+  const pathname = request.nextUrl.pathname;
 
-  const { pathname } = request.nextUrl;
+  const accessToken = request.cookies.get("accessToken")?.value || null;
 
-  const protectedPaths = [
-    "/dashboard",
-    "/profile",
-    "/settings",
-    "/appointments",
-  ];
+  let userRole: UserRole | null = null;
 
-  const authRoutes = ["/login", "/register", "/forgot-password"];
+  if (accessToken) {
+    const verifiedToken = jwt.verify(
+      accessToken,
+      process.env.ACCESS_TOKEN_SECRET as string
+    );
 
-  const isProtectedPath = protectedPaths.some((path) =>
-    pathname.startsWith(path)
-  );
+    if (typeof verifiedToken === "string") {
+      cookieStore.delete("accessToken");
+      cookieStore.delete("refreshToken");
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
 
-  const isAuthRoute = authRoutes.some((path) => pathname === path);
-
-  if (isProtectedPath && !token) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    userRole = verifiedToken.role;
   }
 
-  if (isAuthRoute && token) {
-    return NextResponse.redirect(new URL("/", request.url));
+  const routeOwner = getRouteOwner(pathname);
+
+  const isAuth = isAuthRoute(pathname);
+
+  // Rule 1: User is logged in try to access auth route, redirect to default dashboard
+  if (accessToken && isAuth) {
+    return NextResponse.redirect(
+      new URL(getDefaultDashboardRoute(userRole as UserRole), request.url)
+    );
   }
 
+  // Rule 2: User is trying to access open public routes
+  if (routeOwner === null) {
+    return NextResponse.next();
+  }
+
+  if (!accessToken) {
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("redirect", pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  // Rule 3: User is trying to access common protected routes
+  if (routeOwner === "COMMON") {
+    return NextResponse.next();
+  }
+
+  // Rule 4: user is trying to access admin or doctor protected routes
+  if (userRole === "ADMIN" || "DOCTOR" || "PATIENT") {
+    if (userRole !== routeOwner) {
+      return NextResponse.redirect(
+        new URL(getDefaultDashboardRoute(userRole as UserRole), request.url)
+      );
+    }
+    return NextResponse.next();
+  }
+
+  console.log({ userRole });
   return NextResponse.next();
 }
 
 // See "Matching Paths" below to learn more
 export const config = {
   matcher: [
-    "/dashboard/:path*",
-    "/login",
-    "/register",
-    "/forgot-password",
-    "/profile",
-    "/settings",
-    "/appointments",
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico, sitemap.xml, robots.txt (metadata files)
+     */
+    "/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.well-known).*)",
   ],
 };

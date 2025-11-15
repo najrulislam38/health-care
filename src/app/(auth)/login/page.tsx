@@ -2,7 +2,13 @@ import LoginForm from "@/components/modules/Login/LoginForm";
 import { Home } from "lucide-react";
 import Link from "next/link";
 
-export default function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ redirect?: string }>;
+}) {
+  const params = await searchParams;
+
   return (
     <div className="w-full min-h-screen overflow-hidden">
       {/* Logo */}
@@ -29,7 +35,7 @@ export default function LoginPage() {
               Access your health records and appointments securely
             </p>
           </div>
-          <LoginForm />
+          <LoginForm redirect={params?.redirect} />
         </div>
       </div>
     </div>

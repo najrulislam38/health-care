@@ -13,7 +13,7 @@ import { Eye, EyeOff, Loader, Lock, Mail } from "lucide-react";
 import Link from "next/link";
 import { useActionState, useState } from "react";
 
-export default function LoginForm() {
+export default function LoginForm({ redirect }: { redirect?: string }) {
   const [showPassword, setShowPassword] = useState(false);
 
   const [state, formAction, isPending] = useActionState(loginUser, null);
@@ -27,12 +27,15 @@ export default function LoginForm() {
       return null;
     }
   };
+
+  console.log("redirect from login form", redirect);
   return (
     <div className="w-full space-y-6">
       {/* Form */}
 
       <form action={formAction} className="space-y-5">
         <FieldGroup>
+          {redirect && <input type="hidden" name="redirect" value={redirect} />}
           <div className="grid grid-cols-1 gap-4">
             {/* Email */}
             <Field>
